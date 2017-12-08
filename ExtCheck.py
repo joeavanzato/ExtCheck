@@ -8,9 +8,14 @@
 #Portions of this script are taken from an earlier version I wrote which had more features.  I edited out the non-pertinent sections and designed new logic for most of them to function correctly in this extension-checking scenario but certain deprecated elements remain.
 #I'm trying to remove them all still without breaking things.
 
-import os, hashlib, ntpath, time, datetime, struct, binascii, re
+import os, ntpath, time, datetime, binascii
 from re import split
-from struct import unpack
+
+#os for walking through filesystem and other validation aspects
+#ntpath for normalizing Windows path
+#time for initalizating time formats
+#datetime same as above
+#binascii for converting between hex/raw binary/other formats
 
 global path #Tracks starting directory
 global scansize #Tracks max file threshold 
@@ -18,12 +23,12 @@ global time2 #me being dumb
 global skiplist #list of skipped files during scan
 global detectlist #initializing now because later is a problem
 global startdir  #Gets starting directory for file-writing
-global exttype
+global exttype #Users input for manual extension specification
 
 exttype = 0 #This gets changed if manual extension is used, otherwise current file extension is implemented
-detectlist = []
-skiplist = []
-scansize = 0
+detectlist = [] #List of possible mis-matches
+skiplist = [] #List of skipped files during scan
+scansize = 0 
 time2 = time.strftime("%H-%M(%m-%d-%Y)")
 startdir = os.getcwd()
 
@@ -49,14 +54,14 @@ def maxSize(): #Determines max size for file scanning in megabytes
 def start(): #Initializes program 
     binaryStart()
 
-def binaryStart(): #Will initialize binary analysis operations - Provide signature file or binary - either stringExtract or PE header/section comparison, sort by .exe or all (will fix), also check file signatures and only go PE if MZ detected
+def binaryStart(): #Init
     loadSigs() #Loads file signatures, offsets and descriptions from filesignatures.txt in script home directory
     print("This mode allows the user to specify a signature file directly or select a malware binary for a file-system comparison")
     getPath2()
     printSigs()
     scanforPE()
 
-def getPath2(): #Gets path for database/binary sample as user input, checks if valid directory/file exist before succeeding
+def getPath2(): #Gets path for binary sample as user input, checks if valid file exist before succeeding
     global path
     path = input("Please enter full path for scan initialization : ")
     if (os.path.isdir(os.path.normpath(path)) == False) and (os.path.isfile(ntpath.basename(path)) == True):
@@ -117,7 +122,7 @@ def scanforPE(): #Recursive file system scan for various extensions - logical te
         print("ERROR : ENTER VALID OPTION")
         scanforPE()
 
-def isPE(file, rp): #Tests files against expected DOS/EXE header for typical PE binaries -ensures PE file before passing for information extraction (But doesn't actually right now)
+def isPE(file, rp): #hmmm..waste of space and bad design on my part
     print("Testing... "+file)
     try:
         scanTmp(file, rp)
@@ -288,7 +293,7 @@ def finished(): #Reads and prints mismatch/skip lists
         x = 0
         if (i > 0):
             while x < i:
-                a = skiplist[x] #iterating through hash/name lists simultaneously
+                a = skiplist[x] #iterating through name lists simultaneously
                 x = x + 1
                 b = (skiplist[x]/1000000)
                 x = x + 1
