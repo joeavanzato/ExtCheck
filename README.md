@@ -15,3 +15,4 @@ Uses 'filesignatures.txt' to detect file signatures - text file contains rows co
 
 Currently only ~200 file signatures stored, will add many more shortly.
 
+#Immediate future work is makign this command-line parsable
